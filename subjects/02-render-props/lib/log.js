@@ -426,20 +426,22 @@ Elise: "If you have time to worry, then run," right?
 
 Sonic: Nice smile!
 [Sonic and Elise turn to look over at the horizon.]
-`;
+`
 
-export function listen (cb) {
+export function listen(cb) {
   var lines = script.split('\n').reduce((lines, line) => {
-    if (line !== '') lines.push(line);
-    return lines;
-  }, []);
+    if (line !== '')
+      lines.push(line)
+
+    return lines
+  }, [])
 
   function notify() {
     if (lines.length) {
-      cb([lines.shift()]);
+      cb([ lines.shift() ])
       setTimeout(notify, Math.random() * 1500)
     }
   }
-  notify();
-}
 
+  notify()
+}
