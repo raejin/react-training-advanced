@@ -1,0 +1,5 @@
+subjects/index.html
+subjects/**/index.html
+subjects/**/solution.html
+subjects/**/lecture.html
+!subjects/**/backbone-todomvc/index.html
