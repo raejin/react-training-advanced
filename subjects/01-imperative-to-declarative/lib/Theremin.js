@@ -1,19 +1,21 @@
+import './AudioContextMonkeyPatch'
+
 function Theremin(audioContext) {
 
 	// TODO make more things not use this.
-	var oscillatorNode = audioContext.createOscillator();
+	let oscillatorNode = audioContext.createOscillator();
 	oscillatorNode.start(0);
 
-	var gainNode = audioContext.createGain();
+	let gainNode = audioContext.createGain();
 	this.pitchBase = 50;
 	this.pitchBend = 0;
 	this.pitchRange = 2000;
 	this.volume = 0.5;
 	this.maxVolume = 1;
 	this.frequency = this.pitchBase;
-  var hasConnected = false
+  let hasConnected = false
 
-	var frequency = this.pitchBase;
+	let frequency = this.pitchBase;
 
 	this.play = function() {
     oscillatorNode.connect(gainNode);
@@ -49,3 +51,11 @@ function Theremin(audioContext) {
 }
 
 export default Theremin
+
+export function createTheremin () {
+  let audioContext = new AudioContext()
+  let theremin = new Theremin(audioContext)
+  theremin.connect(audioContext.destination)
+  return theremin
+}
+
