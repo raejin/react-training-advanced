@@ -18,23 +18,78 @@
 //   `lib/githubSearch` that uses a render prop to pass its data back up
 ////////////////////////////////////////////////////////////////////////////////
 import React from 'react'
-import { render } from 'react-dom'
+import { render, findDOMNode } from 'react-dom'
 import { listen } from './lib/log'
 
+const { arrayOf, func, number, oneOfType, string } = React.PropTypes
+
+const component = oneOfType([ string, func ])
+
+class PinnedToBottom extends React.Component {
+
+  static propTypes = {
+    component: component.isRequired,
+    tolerance: number.isRequired
+  }
+
+  static defaultProps = {
+    component: 'div',
+    tolerance: 10
+  }
+
+  scrollToBottom() {
+    let node = findDOMNode(this)
+    node.scrollTop = node.scrollHeight
+  }
+
+  adjustScrollPosition() {
+    if (this.pinToBottom)
+      this.scrollToBottom()
+  }
+
+  componentWillMount() {
+    this.pinToBottom = true
+  }
+
+  componentDidMount() {
+    this.adjustScrollPosition()
+  }
+
+  componentWillUpdate() {
+    let node = findDOMNode(this)
+    let { clientHeight, scrollHeight, scrollTop } = node
+    this.pinToBottom = (scrollHeight - (clientHeight + scrollTop)) < this.props.tolerance
+  }
+
+  componentDidUpdate() {
+    this.adjustScrollPosition()
+  }
+
+  render() {
+    let { children, component, style } = this.props
+
+    return React.createElement(component, {
+      style: { ...style, overflowY: 'scroll' },
+      children
+    })
+  }
+
+}
+
 class Tail extends React.Component {
+
+  static propTypes = {
+    lines: arrayOf(string).isRequired,
+    n: number.isRequired
+  }
 
   static defaultProps = {
     n: 15
   }
 
   render() {
-    let { rows, n } = this.props
-
-    return (
-      <div style={{ height: 400, overflow: 'auto', border: '1px solid' }}>
-        {this.props.children(rows.slice(-n))}
-      </div>
-    )
+    let { children, lines, n } = this.props
+    return children(lines.slice(-n))
   }
 
 }
@@ -45,14 +100,14 @@ class App extends React.Component {
     super(props, context)
 
     this.state = {
-      rows: []
+      lines: []
     }
   }
 
   componentDidMount() {
-    listen((newRows) => {
+    listen(newLines => {
       this.setState({
-        rows: this.state.rows.concat(newRows)
+        lines: this.state.lines.concat(newLines)
       })
     })
   }
@@ -61,19 +116,23 @@ class App extends React.Component {
     return (
       <div>
         <h1>Heads up Eggman, here comes <code>&lt;Tails&gt;</code>s!</h1>
-        <Tail rows={this.state.rows} n={5}>
-          {(truncatedRows) => (
-            <ul>
-              {truncatedRows.map((row, index) => (
-                <li key={row}>{row}</li>
-              ))}
-            </ul>
-          )}
-        </Tail>
+        <div style={{ height: 400, overflowY: 'scroll', border: '1px solid' }}>
+        {/* <PinnedToBottom style={{ height: 400, border: '1px solid' }}> */}
+          <Tail lines={this.state.lines} n={50}>
+            {(truncatedLines) => (
+              <ul>
+                {truncatedLines.map((line, index) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            )}
+          </Tail>
+        {/* </PinnedToBottom> */}
+        </div>
       </div>
     )
   }
 
 }
 
-render(<App/>, document.getElementById('app'))
+render(<App />, document.getElementById('app'))

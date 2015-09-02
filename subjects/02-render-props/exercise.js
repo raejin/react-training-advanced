@@ -24,19 +24,15 @@ import { listen } from './lib/log'
 class Tail extends React.Component {
 
   render() {
-    let { rows } = this.props
+    let { lines } = this.props
 
+    // hint: get this rendering outta here and into App
     return (
-      <div style={{ height: 400, overflow: 'auto', border: '1px solid' }}>
-
-        {/* get this rendering outta here and into App */}
-        <ul>
-          {this.props.rows.map((row, index) => (
-            <li key={index}>{row}</li>
-          ))}
-        </ul>
-
-      </div>
+      <ul>
+        {lines.map((line, index) => (
+          <li key={index}>{line}</li>
+        ))}
+      </ul>
     )
   }
 
@@ -48,14 +44,14 @@ class App extends React.Component {
     super(props, context)
 
     this.state = {
-      rows: []
+      lines: []
     }
   }
 
   componentDidMount() {
-    listen((newRows) => {
+    listen(newLines => {
       this.setState({
-        rows: this.state.rows.concat(newRows)
+        lines: this.state.lines.concat(newLines)
       })
     })
   }
@@ -64,11 +60,13 @@ class App extends React.Component {
     return (
       <div>
         <h1>Heads up Eggman, here comes <code>&lt;Tails&gt;</code>s!</h1>
-        <Tail rows={this.state.rows}/>
+        <div style={{ height: 400, overflowY: 'scroll', border: '1px solid' }}>
+          <Tail lines={this.state.lines} />
+        </div>
       </div>
     )
   }
 
 }
 
-render(<App/>, document.getElementById('app'))
+render(<App />, document.getElementById('app'))
